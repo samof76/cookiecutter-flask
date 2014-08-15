@@ -8,8 +8,7 @@ Jinja2==2.7.3
 itsdangerous==0.24
 
 # Database
-Flask-SQLAlchemy==1.0
-SQLAlchemy==0.9.7
+flask-mongoengine
 
 # Migrations
 Flask-Migrate==1.2.0
@@ -32,3 +31,4 @@ Flask-Bcrypt==0.6.0
 
 # Caching
 Flask-Cache>=0.12
+s

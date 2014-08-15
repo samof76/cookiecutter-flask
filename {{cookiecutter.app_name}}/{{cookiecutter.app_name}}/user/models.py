@@ -3,48 +3,36 @@ import datetime as dt
 
 from flask.ext.login import UserMixin
 
-from {{cookiecutter.app_name}}.extensions import bcrypt
-from {{cookiecutter.app_name}}.database import (
-    Column,
-    db,
-    Model,
-    ReferenceCol,
-    relationship,
-    SurrogatePK,
-)
+from {{cookiecutter.app_name}}.extensions import bcrypt, db
 
 
-class Role(SurrogatePK, Model):
-    __tablename__ = 'roles'
-    name = Column(db.String(80), unique=True, nullable=False)
-    user_id = ReferenceCol('users', nullable=True)
-    user = relationship('User', backref='roles')
+class User(UserMixin, db.Document):
 
-    def __init__(self, name, **kwargs):
-        db.Model.__init__(self, name=name, **kwargs)
-
-    def __repr__(self):
-        return '<Role({name})>'.format(name=self.name)
-
-class User(UserMixin, SurrogatePK, Model):
-
-    __tablename__ = 'users'
-    username = Column(db.String(80), unique=True, nullable=False)
-    email = Column(db.String(80), unique=True, nullable=False)
+    username = db.StringField(max_length=80, unique=True, required=True)
+    email = db.StringField(max_length=80, unique=True, required=True)
     #: The hashed password
-    password = Column(db.String(128), nullable=True)
-    created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
-    first_name = Column(db.String(30), nullable=True)
-    last_name = Column(db.String(30), nullable=True)
-    active = Column(db.Boolean(), default=False)
-    is_admin = Column(db.Boolean(), default=False)
+    password = db.StringField(max_length=128, required=True)
+    created_at = db.DateTimeField(required=True)
+    first_name = db.StringField(max_length=30)
+    last_name = db.StringField(max_length=30)
+    active = db.BooleanField(default=False)
+    is_admin = db.BooleanField(default=False)
 
-    def __init__(self, username, email, password=None, **kwargs):
-        db.Model.__init__(self, username=username, email=email, **kwargs)
-        if password:
-            self.set_password(password)
+    @classmethod
+    def create(cls, username, email, password, **kwargs):
+        now = dt.datetime.now()
+        user = cls(username=username, email=email, created_at=now, **kwargs)
+        user.set_password(password)
+        user.save()
+        return user
+
+    @classmethod
+    def get_by_id(cls, id):
+        user = cls.objects.with_id(id)
+        if user:
+            return user
         else:
-            self.password = None
+            return None
 
     def set_password(self, password):
         self.password = bcrypt.generate_password_hash(password)

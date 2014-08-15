@@ -4,6 +4,7 @@ import os
 os_env = os.environ
 
 class Config(object):
+    APP_NAME = '{{cookiecutter.app_name}}'
     SECRET_KEY = os_env['{{cookiecutter.app_name | upper}}_SECRET']  # TODO: Change me
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
@@ -18,7 +19,8 @@ class ProdConfig(Config):
     """Production configuration."""
     ENV = 'prod'
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/example'  # TODO: Change me
+    MONGODB_DB = '{0}_{1}'.format(APP_NAME, ENV)
+    MONGODB_SETTINGS = {'DB': MONGODB_DB, 'HOST': 'localhost', 'PORT': 27017}
     DEBUG_TB_ENABLED = False  # Disable Debug toolbar
 
 
@@ -26,10 +28,9 @@ class DevConfig(Config):
     """Development configuration."""
     ENV = 'dev'
     DEBUG = True
-    DB_NAME = 'dev.db'
     # Put the db file in project root
-    DB_PATH = os.path.join(Config.PROJECT_ROOT, DB_NAME)
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///{0}'.format(DB_PATH)
+    MONGODB_DB = '{0}_{1}'.format(APP_NAME, ENV)
+    MONGODB_SETTINGS = {'DB': MONGODB_DB, 'HOST': 'localhost', 'PORT': 27017}
     DEBUG_TB_ENABLED = True
     ASSETS_DEBUG = True  # Don't bundle/minify static assets
     CACHE_TYPE = 'simple'  # Can be "memcached", "redis", etc.
